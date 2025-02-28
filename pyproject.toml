@@ -1,0 +1,39 @@
+[project]
+name = "scopus-recsys-job"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "duckdb>=1.2.0",
+    "loguru>=0.7.3",
+    "markupsafe==2.1.5",
+    "numpy>=2.1.2",
+    "openai>=1.65.1",
+    "openpyxl>=3.1.5",
+    "pandas>=2.2.3",
+    "pydantic>=2.10.6",
+    "sentence-transformers>=3.4.1",
+    "torch>=2.6.0",
+    "tqdm>=4.66.5",
+    "typer>=0.15.2",
+]
+
+[dependency-groups]
+ci = [
+    "mypy>=1.15.0",
+    "pandas-stubs>=2.2.3.241126",
+    "ruff>=0.9.9",
+    "types-tqdm>=4.67.0.20250228",
+]
+
+[tool.uv.sources]
+torch = { index = "pytorch" }
+
+[[tool.uv.index]]
+name = "pytorch"
+url = "https://download.pytorch.org/whl/cpu"
+
+
+[tool.mypy]
+ignore_missing_imports = true

@@ -1,0 +1,52 @@
+services:
+  scopus-recsys-init:
+    user: root
+    image: scopus-recsys:0.1
+    platform: linux/amd64  # Specify the platform if needed
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    environment:
+      - DATA_PATH=/data
+      - EMBEDDING_DIM=384
+    volumes:
+      - ./data/:/data
+      - ./src/job/:/app/src/job
+    command: uv run main.py init
+
+  scopus-recsys-classify:
+    user: root
+    image: scopus-recsys:0.1
+    platform: linux/amd64  # Specify the platform if needed
+    environment:
+      - BATCH_SIZE=10
+      - DATA_PATH=/data
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    volumes:
+      - ./data/:/data
+      - ./src/job/:/app/src/job
+    command: uv run main.py classify
+
+  scopus-recsys-embed-algorithm:
+    user: root
+    image: scopus-recsys:0.1
+    platform: linux/amd64  # Specify the platform if needed
+    environment:
+      - DATA_PATH=/data
+      - EMBEDDING_MODEL=all-MiniLM-L6-v2
+    volumes:
+      - ./data/:/data
+      - ./src/job/:/app/src/job
+    command: uv run main.py embed-algorithm
+
+  scopus-recsys-embed-application:
+    user: root
+    image: scopus-recsys:0.1
+    platform: linux/amd64  # Specify the platform if needed
+    environment:
+      - DATA_PATH=/data
+      - EMBEDDING_MODEL=all-MiniLM-L6-v2
+    volumes:
+      - ./data/:/data
+      - ./src/job/:/app/src/job
+    command: uv run main.py embed-application
