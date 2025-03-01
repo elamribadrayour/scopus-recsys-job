@@ -27,7 +27,7 @@ services:
       - ./src/job/:/app/src/job
     command: uv run main.py classify
 
-  scopus-recsys-embed-algorithm:
+  scopus-recsys-similarity-algorithm:
     user: root
     image: scopus-recsys:0.1
     platform: linux/amd64  # Specify the platform if needed
@@ -37,9 +37,9 @@ services:
     volumes:
       - ./data/:/data
       - ./src/job/:/app/src/job
-    command: uv run main.py embed-algorithm
+    command: uv run main.py similarity-algorithm
 
-  scopus-recsys-embed-application:
+  scopus-recsys-similarity-application:
     user: root
     image: scopus-recsys:0.1
     platform: linux/amd64  # Specify the platform if needed
@@ -49,4 +49,15 @@ services:
     volumes:
       - ./data/:/data
       - ./src/job/:/app/src/job
-    command: uv run main.py embed-application
+    command: uv run main.py similarity-application
+
+  scopus-recsys-algorithm-application-link:
+    user: root
+    image: scopus-recsys:0.1
+    platform: linux/amd64  # Specify the platform if needed
+    environment:
+      - DATA_PATH=/data
+    volumes:
+      - ./data/:/data
+      - ./src/job/:/app/src/job
+    command: uv run main.py algorithm-application-link

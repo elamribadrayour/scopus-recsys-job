@@ -1,5 +1,5 @@
 CREATE OR REPLACE TABLE algorithm_similarity (
-    algorithm_1 VARCHAR,
-    algorithm_2 VARCHAR,
-    score FLOAT
+    group_id VARCHAR,
+    group_name VARCHAR,
+    value VARCHAR
 );

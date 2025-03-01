@@ -29,49 +29,19 @@ def get_data_to_classify(db: duckdb.DuckDBPyConnection) -> pandas.DataFrame:
     return db.execute(query=query).fetch_df()
 
 
-def get_algorithms_to_embed(db: duckdb.DuckDBPyConnection) -> pandas.DataFrame:
+def get_algorithms_to_embed(db: duckdb.DuckDBPyConnection) -> list[str]:
     query = """
-    SELECT algorithms
+    SELECT DISTINCT UNNEST(algorithms) AS algorithm
     FROM classification
     """
     algorithms = db.execute(query=query).fetchall()
-    algorithms = [row[0] for row in algorithms]
-    algorithms = [item for sublist in algorithms for item in sublist]
-    algorithms = list(set(algorithms))
+    return list(set([row[0] for row in algorithms]))
 
+
+def get_applications_to_embed(db: duckdb.DuckDBPyConnection) -> list[str]:
     query = """
-    SELECT algorithm
-    FROM algorithm_embedding
-    """
-    algorithms_embedded = db.execute(query=query).fetchall()
-    algorithms_embedded = [row[0] for row in algorithms_embedded]
-    algorithms_embedded = list(set(algorithms_embedded))
-
-    algorithms = [
-        algorithm for algorithm in algorithms if algorithm not in algorithms_embedded
-    ]
-    return pandas.DataFrame(list(set(algorithms)), columns=["algorithm"])
-
-
-def get_applications_to_embed(db: duckdb.DuckDBPyConnection) -> pandas.DataFrame:
-    query = """
-    WITH application_processed AS (
-        SELECT application
-        FROM application_embedding
-    ),
-
-    all_applications AS (
-        SELECT DISTINCT application
-        FROM classification
-    )
-
-    SELECT
-        a.application
-    FROM all_applications a
-    LEFT JOIN application_processed ap ON a.application = ap.application
-    WHERE ap.application IS NULL
+    SELECT DISTINCT application
+    FROM classification
     """
     output = db.execute(query=query).fetchall()
-    return pandas.DataFrame(
-        list(set([row[0] for row in output])), columns=["application"]
-    )
+    return list(set([row[0] for row in output]))

@@ -13,6 +13,7 @@ import helpers.db
 import helpers.embed
 import helpers.download
 import helpers.classify
+import helpers.similarity
 
 app = Typer(name="scopus-recsys")
 
@@ -21,7 +22,7 @@ app = Typer(name="scopus-recsys")
 def init(
     data_path: Annotated[str, Argument(envvar="DATA_PATH")],
 ):
-    logger.info(f"initializing database at {data_path}")
+    logger.info("initializing database")
     conn = helpers.db.get_db(data_path)
     data = helpers.download.get_all_papers()
     logger.info(f"number of papers to process: {len(data)}")
@@ -37,6 +38,7 @@ def classify(
     openai_api_key: Annotated[str, Argument(envvar="OPENAI_API_KEY")],
     batch_size: Annotated[int, Argument(envvar="BATCH_SIZE")] = 10,
 ):
+    logger.info("classifying papers")
     conn = helpers.db.get_db(data_path=data_path)
     helpers.db.set_table(conn=conn, table_name="classification")
     data = helpers.download.get_data_to_classify(db=conn)
@@ -55,20 +57,18 @@ def classify(
         helpers.db.set_data(conn=conn, table_name="classification", data=data)
 
 
-@app.command(name="embed-algorithm")
-def embed_algorithm(
+@app.command(name="similarity-algorithm")
+def similarity_algorithm(
     data_path: Annotated[str, Argument(envvar="DATA_PATH")],
     embedding_model: Annotated[str, Argument(envvar="EMBEDDING_MODEL")],
 ):
+    logger.info("calculating algorithm similarity")
     conn = helpers.db.get_db(data_path)
-    model_dimensions = helpers.embed.get_model_dimensions(
-        embedding_model=embedding_model
-    )
     helpers.db.set_table(
         conn=conn,
-        table_name="algorithm-embedding",
-        args={"model_dimension": model_dimensions},
+        table_name="algorithm-similarity",
     )
+
     data = helpers.download.get_algorithms_to_embed(db=conn)
     logger.info(f"number of algorithms to embed: {len(data)}")
 
@@ -76,28 +76,25 @@ def embed_algorithm(
         logger.info("no algorithms to embed")
         return
 
-    data = helpers.embed.get_embeddings(
-        data=data, embedding_model=embedding_model, column="algorithm"
+    output = helpers.similarity.get_similarity(
+        data=data, embedding_model=embedding_model
     )
-    helpers.db.set_data(conn=conn, table_name="algorithm-embedding", data=data)
-    helpers.db.optimize_index(conn=conn, table_name="algorithm-embedding")
-    logger.info("algorithms embedded")
+    helpers.db.set_data(conn=conn, table_name="algorithm-similarity", data=output)
+    helpers.db.optimize_index(conn=conn, table_name="algorithm-similarity")
 
 
-@app.command(name="embed-application")
-def embed_application(
+@app.command(name="similarity-application")
+def similarity_application(
     data_path: Annotated[str, Argument(envvar="DATA_PATH")],
     embedding_model: Annotated[str, Argument(envvar="EMBEDDING_MODEL")],
 ):
+    logger.info("calculating application similarity")
     conn = helpers.db.get_db(data_path)
-    model_dimensions = helpers.embed.get_model_dimensions(
-        embedding_model=embedding_model
-    )
     helpers.db.set_table(
         conn=conn,
-        table_name="application-embedding",
-        args={"model_dimension": model_dimensions},
+        table_name="application-similarity",
     )
+
     data = helpers.download.get_applications_to_embed(db=conn)
     logger.info(f"number of applications to embed: {len(data)}")
 
@@ -105,12 +102,28 @@ def embed_application(
         logger.info("no applications to embed")
         return
 
-    data = helpers.embed.get_embeddings(
-        data=data, embedding_model=embedding_model, column="application"
+    output = helpers.similarity.get_similarity(
+        data=data, embedding_model=embedding_model
     )
-    helpers.db.set_data(conn=conn, table_name="application-embedding", data=data)
-    helpers.db.optimize_index(conn=conn, table_name="application-embedding")
-    logger.info("applications embedded")
+    helpers.db.set_data(conn=conn, table_name="application-similarity", data=output)
+    helpers.db.optimize_index(conn=conn, table_name="application-similarity")
+
+
+@app.command(name="algorithm-application-link")
+def algorithm_application_link(
+    data_path: Annotated[str, Argument(envvar="DATA_PATH")],
+):
+    logger.info("calculating algorithm applications links")
+    conn = helpers.db.get_db(data_path)
+    helpers.db.set_table(
+        conn=conn,
+        table_name="algorithm-application-link",
+    )
+
+    helpers.db.set_data_from_query(
+        conn=conn,
+        table_name="algorithm-application-link",
+    )
 
 
 if __name__ == "__main__":

@@ -32,6 +32,16 @@ def set_data(conn: duckdb.DuckDBPyConnection, table_name: str, data: pandas.Data
     logger.info(f"set data: {table_name} size={nb_rows}")
 
 
+def set_data_from_query(conn: duckdb.DuckDBPyConnection, table_name: str):
+    query = open(f"sql/populate/{table_name}.sql").read()
+    conn.execute(query=query)
+    conn.commit()
+
+    table_name = table_name.replace("-", "_")
+    nb_rows = conn.execute(f"SELECT COUNT(*) FROM {table_name}").fetchone()[0]  # type: ignore
+    logger.info(f"set data: {table_name} size={nb_rows}")
+
+
 def optimize_index(conn: duckdb.DuckDBPyConnection, table_name: str):
     query = open(f"sql/optimize/{table_name}.sql").read()
     conn.execute(query)
