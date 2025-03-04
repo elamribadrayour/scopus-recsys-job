@@ -3,9 +3,16 @@ This module contains the functions to predict the datasets, algorithms and appli
 """
 
 import pandas
-from openai import OpenAI
+import ollama
+from ollama import chat
+from loguru import logger
+
 
 from models.output import Output
+
+
+def init(model: str, ollama_host: str) -> None:
+    ollama.pull(model=model)
 
 
 def get_prompt(text: str) -> str:
@@ -25,24 +32,34 @@ def get_prompt(text: str) -> str:
     """
 
 
-def get_classification(prompt: str, openai_api_key: str) -> dict | None:
-    client = OpenAI(api_key=openai_api_key)
-    response = client.beta.chat.completions.parse(
-        model="gpt-4o-mini",
-        messages=[{"role": "user", "content": prompt}],
-        response_format=Output,
+def get_classification(prompt: str, model: str, ollama_host: str) -> dict | None:
+    response = chat(
+        model=model,
+        format=Output.model_json_schema(),
+        messages=[
+            {
+                "role": "user",
+                "content": prompt,
+            },
+        ],
     )
-    output = response.choices[0].message.parsed
+
+    output = None
+    try:
+        output = Output.model_validate_json(response.message.content)
+    except Exception as e:
+        logger.error(f"error validating JSON: {e}")
+        return None
     return output.model_dump() if output else None
 
 
 def get_classifications(
-    data: pandas.DataFrame, openai_api_key: str
+    data: pandas.DataFrame, model: str, ollama_host: str
 ) -> pandas.DataFrame:
     data = data.copy()
-    data["prompt"] = data["Abstract"].apply(lambda x: get_prompt(text=x))
+    data["prompt"] = data["abstract"].apply(lambda x: get_prompt(text=x))
     data["prediction"] = data["prompt"].apply(
-        lambda x: get_classification(prompt=x, openai_api_key=openai_api_key)
+        lambda x: get_classification(prompt=x, model=model, ollama_host=ollama_host)
     )
     data = data[data["prediction"].notna()]
     data["datasets"] = data["prediction"].apply(
@@ -54,4 +71,4 @@ def get_classifications(
     data["application"] = data["prediction"].apply(
         lambda x: str(x["application"]).lower()
     )
-    return data[["DOI", "datasets", "algorithms", "application"]]
+    return data[["doi", "datasets", "algorithms", "application"]]

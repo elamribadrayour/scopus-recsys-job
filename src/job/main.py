@@ -34,9 +34,9 @@ def init(
 
 @app.command(name="classify")
 def classify(
+    llm: Annotated[str, Argument(envvar="LLM")],
     data_path: Annotated[str, Argument(envvar="DATA_PATH")],
-    openai_api_key: Annotated[str, Argument(envvar="OPENAI_API_KEY")],
-    batch_size: Annotated[int, Argument(envvar="BATCH_SIZE")] = 10,
+    ollama_host: Annotated[str, Argument(envvar="OLLAMA_HOST")],
 ):
     logger.info("classifying papers")
     conn = helpers.db.get_db(data_path=data_path)
@@ -48,11 +48,13 @@ def classify(
         logger.info("no data to classify")
         return
 
-    batches = numpy.array_split(data, len(data) // batch_size)
+    helpers.classify.init(model=llm, ollama_host=ollama_host)
+    batches = numpy.array_split(data, len(data) // 10)
     for batch in tqdm(batches, total=len(batches)):
         data = helpers.classify.get_classifications(
+            model=llm,
             data=batch,  # type: ignore
-            openai_api_key=openai_api_key,
+            ollama_host=ollama_host,
         )
         helpers.db.set_data(conn=conn, table_name="classification", data=data)
 

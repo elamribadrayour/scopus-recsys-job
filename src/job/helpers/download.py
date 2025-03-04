@@ -23,8 +23,7 @@ def get_data_to_classify(db: duckdb.DuckDBPyConnection) -> pandas.DataFrame:
     )
     SELECT p.*
     FROM paper p
-    LEFT JOIN classified_dois cd ON p.doi = cd.doi
-    WHERE cd.doi IS NULL
+    LIMIT 10
     """
     return db.execute(query=query).fetch_df()
 

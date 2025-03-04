@@ -19,13 +19,17 @@ services:
     image: scopus-recsys:0.1
     platform: linux/amd64  # Specify the platform if needed
     environment:
-      - BATCH_SIZE=10
       - DATA_PATH=/data
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - LLM=llama3.2:1b
+      - OLLAMA_HOST=scopus-recsys-ollama
     volumes:
       - ./data/:/data
       - ./src/job/:/app/src/job
     command: uv run main.py classify
+    networks:
+      - scopus-recsys-network
+    depends_on:
+      - scopus-recsys-ollama
 
   scopus-recsys-similarity-algorithm:
     user: root
@@ -61,3 +65,19 @@ services:
       - ./data/:/data
       - ./src/job/:/app/src/job
     command: uv run main.py algorithm-application-link
+
+  scopus-recsys-ollama:
+    user: root
+    image: ollama/ollama:0.5.13
+    platform: linux/amd64  # Specify the platform if needed
+    volumes:
+      - ./data/:/data
+      - ./src/job/:/app/src/job
+    networks:
+      - scopus-recsys-network
+    ports:
+      - "11434:11434"
+
+networks:
+  scopus-recsys-network:
+    driver: bridge

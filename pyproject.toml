@@ -9,7 +9,7 @@ dependencies = [
     "loguru>=0.7.3",
     "markupsafe==2.1.5",
     "numpy>=2.1.2",
-    "openai>=1.65.1",
+    "ollama>=0.4.7",
     "openpyxl>=3.1.5",
     "pandas>=2.2.3",
     "pydantic>=2.10.6",
@@ -25,6 +25,10 @@ ci = [
     "pandas-stubs>=2.2.3.241126",
     "ruff>=0.9.9",
     "types-tqdm>=4.67.0.20250228",
+]
+dev = [
+    "ipykernel>=6.29.5",
+    "ipywidgets>=8.1.5",
 ]
 
 [tool.uv.sources]

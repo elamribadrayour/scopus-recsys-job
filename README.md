@@ -4,7 +4,7 @@ A sophisticated system for analyzing, classifying, and finding similarities betw
 
 ## 🌟 Features
 
-- **Paper Classification**: Automatically classifies research papers based on their abstracts using OpenAI's API
+- **Paper Classification**: Automatically classifies research papers based on their abstracts using Large Language Models.
 - **Algorithm Similarity**: Calculates similarities between different algorithms mentioned in papers
 - **Application Similarity**: Identifies similar applications across different papers
 - **Algorithm-Application Linking**: Creates connections between algorithms and their applications
@@ -15,9 +15,7 @@ A sophisticated system for analyzing, classifying, and finding similarities betw
 ### Prerequisites
 
 - Python 3.x
-- Docker (optional)
-- OpenAI API key
-- Access to embedding model
+- Docker
 
 ### Environment Setup
 
@@ -30,7 +28,8 @@ cd scopus-recsys-job
 2. Set up environment variables in `.env`:
 ```bash
 DATA_PATH=<path-to-data>
-OPENAI_API_KEY=<your-openai-api-key>
+OLLAMA_HHOST=<your-ollama-host>
+LLM=<the-required-llm-for-predictions>
 ```
 
 3. Install dependencies:
@@ -97,7 +96,7 @@ This project uses:
 - `typer` for CLI interface
 - `loguru` for logging
 - `numpy` for data processing
-- OpenAI's API for classification
+- Ollama's API for classification
 - SQLite for data storage
 
 ## 📝 License
